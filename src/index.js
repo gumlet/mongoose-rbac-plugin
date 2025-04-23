@@ -1,5 +1,3 @@
-'use strict'
-
 module.exports = function role (schema, options) {
   // Set the default options
   options = Object.assign(
@@ -19,13 +17,12 @@ module.exports = function role (schema, options) {
   )
 
   // Set the role path when not provided
-  if(!schema.path(options.rolePath)){
+  if (!schema.path(options.rolePath)) {
     schema
       .path(options.rolePath, [])
       .path(options.rolePath)
       .required(true)
   }
-
 
   // Expose the roles
   schema.static(options.rolesStaticPath, options.roles)
@@ -34,7 +31,7 @@ module.exports = function role (schema, options) {
 
   // Set the hasAccess method
   schema.method(options.hasAccessMethod, function (accessLevels) {
-    var userRoles = this.get(options.rolePath)
+    const userRoles = this.get(options.rolePath)
     return roleHasAccess(userRoles, accessLevels)
   })
 
@@ -49,35 +46,29 @@ module.exports = function role (schema, options) {
     // Goes through all access levels, and if any one of the access levels
     // doesn't exist in the roles, return false
     return !accessLevels.some(level => {
-      var accesses = options.accessLevels[level] || []
-      var intersection = roles.filter(value => accesses.includes(value))
-      if(intersection.length==0)
-        return true;
-      return false;
-
+      const accesses = options.accessLevels[level] || []
+      const intersection = roles.filter(value => accesses.includes(value))
+      if (intersection.length === 0) { return true }
+      return false
     })
   }
 
-  schema.method(options.hasAccessOnRoute, function (req,res,next) {
-    let userRoles = this.get(options.rolePath)
-    let maxLevel = options.maxLevel
-    if(hasAccessOnRoute(userRoles,req['_parsedOriginalUrl']['pathname'],maxLevel)){
+  schema.method(options.hasAccessOnRoute, function (req, res, next) {
+    const userRoles = this.get(options.rolePath)
+    const maxLevel = options.maxLevel
+    if (hasAccessOnRoute(userRoles, req._parsedOriginalUrl.pathname, maxLevel)) {
       next()
-    }
-    else{
-      res.set("Cache-Control", "private, max-age=0");
-      res.status(403).send("Access Denied.");
+    } else {
+      res.set('Cache-Control', 'private, max-age=0')
+      res.status(403).send('Access Denied.')
     }
   })
 
-
-  function hasAccessOnRoute (userRoles,route, maxLevel) {
-    let levels = route.split('/');
-    if(levels.length<1){
-      return false;
+  function hasAccessOnRoute (userRoles, route, maxLevel) {
+    const levels = route.split('/')
+    if (levels.length < 1) {
+      return false
     }
-    return roleHasAccess(userRoles,levels.slice(1,maxLevel+1));
-
+    return roleHasAccess(userRoles, levels.slice(1, maxLevel + 1))
   }
-
 }

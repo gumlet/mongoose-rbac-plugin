@@ -1,10 +1,10 @@
-'use strict'
+/* eslint-env jest */
 
-var mongoose = require('mongoose')
-var role = require('../src/index')
+const mongoose = require('mongoose')
+const role = require('../src/index')
 
-var Schema = mongoose.Schema
-var testSchema = {
+const Schema = mongoose.Schema
+const testSchema = {
   name: String
 }
 
@@ -13,17 +13,17 @@ beforeAll(() => {
     'mongodb://127.0.0.1/mongoose-role-test', {
       useNewUrlParser: true
     }
-  );
-});
+  )
+})
 
 afterAll(() => {
   return mongoose.connection.db
     .dropDatabase()
     .then(() => mongoose.disconnect())
-});
+})
 
 test('should give accurate user account lockage', () => {
-  var TestSchema = new Schema(testSchema)
+  const TestSchema = new Schema(testSchema)
   TestSchema.plugin(role, {
     roles: ['user', 'admin'],
     accessLevels: {
@@ -31,12 +31,12 @@ test('should give accurate user account lockage', () => {
       admin: ['admin']
     }
   })
-  var Test = mongoose.model('Test1', TestSchema)
-  var model1 = new Test({
+  const Test = mongoose.model('Test1', TestSchema)
+  const model1 = new Test({
     name: 'test1',
     roles: ['user']
   })
-  var model2 = new Test({
+  const model2 = new Test({
     name: 'test2',
     roles: ['admin']
   })
@@ -46,17 +46,17 @@ test('should give accurate user account lockage', () => {
   expect(model2.hasAccess('admin')).toBe(true)
   expect(model1.hasAccess()).toBe(false)
   expect(model1.hasAccess('public')).toBe(false)
-});
+})
 
-test("should not break completely if options aren't passed", function(done) {
-  var TestSchema = new Schema(testSchema)
+test("should not break completely if options aren't passed", function (done) {
+  const TestSchema = new Schema(testSchema)
   TestSchema.plugin(role)
-  var Test = mongoose.model('Test2', TestSchema)
-  var model1 = new Test({
+  const Test = mongoose.model('Test2', TestSchema)
+  const model1 = new Test({
     name: 'test1',
     roles: ['user']
   })
-  var model2 = new Test({
+  const model2 = new Test({
     name: 'test2',
     roles: ['admin']
   })
@@ -66,16 +66,16 @@ test("should not break completely if options aren't passed", function(done) {
   expect(model2.hasAccess('admin')).toBe(false)
   expect(model1.hasAccess()).toBe(false)
   expect(model1.hasAccess('public')).toBe(false)
-  model1.save(function(err, model) {
+  model1.save(function (err, model) {
     // console.log(err);
     // console.log(err.errors.role.kind);
     expect(err).toBe(null)
-    done();
-  });
-});
+    done()
+  })
+})
 
-test('should work with an array of access levels', function() {
-  var TestSchema = new Schema(testSchema)
+test('should work with an array of access levels', function () {
+  const TestSchema = new Schema(testSchema)
   TestSchema.plugin(role, {
     roles: ['anon', 'user', 'admin'],
     accessLevels: {
@@ -84,16 +84,16 @@ test('should work with an array of access levels', function() {
       protected: ['admin']
     }
   })
-  var Test = mongoose.model('Test3', TestSchema)
-  var model1 = new Test({
+  const Test = mongoose.model('Test3', TestSchema)
+  const model1 = new Test({
     name: 'test1',
     roles: ['anon']
   })
-  var model2 = new Test({
+  const model2 = new Test({
     name: 'test2',
     roles: ['user']
   })
-  var model3 = new Test({
+  const model3 = new Test({
     name: 'test3',
     roles: ['admin']
   })
@@ -103,22 +103,22 @@ test('should work with an array of access levels', function() {
   expect(model2.hasAccess(['public', 'private'])).toBe(true)
   expect(model2.hasAccess(['private', 'protected'])).toBe(false)
   expect(model3.hasAccess(['public', 'private', 'protected'])).toBe(true)
-});
+})
 
-test('should work with multiple roles',function(){
-  var TestSchema = new Schema(testSchema)
+test('should work with multiple roles', function () {
+  const TestSchema = new Schema(testSchema)
   TestSchema.plugin(role, {
-    roles: ['user', 'admin','public'],
+    roles: ['user', 'admin', 'public'],
     accessLevels: {
       user: ['user', 'admin'],
       admin: ['admin'],
       public: ['public']
     }
   })
-  var Test = mongoose.model('Test4', TestSchema)
-  var model1 = new Test({
+  const Test = mongoose.model('Test4', TestSchema)
+  const model1 = new Test({
     name: 'test1',
-    roles: ['user','public']
+    roles: ['user', 'public']
   })
   expect(model1.hasAccess(['public', 'user'])).toBe(true)
-});
+})
